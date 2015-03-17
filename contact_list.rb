@@ -43,6 +43,15 @@ class Application
     id = String(ARGV[1])
     record = Contact.find(id)
     record.destroy
+  when 'email'
+    email = String(ARGV[1])
+    contact = Contact.find_by_email(email)
+  when 'firstname'
+    firstname = String(ARGV[1])
+    contacts = Contact.find_all_by_firstname(firstname)
+  when 'lastname'
+    lastname = String(ARGV[1])
+    contacts = Contact.find_all_by_lastname(lastname)
   end
 end
 

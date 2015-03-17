@@ -56,7 +56,7 @@ class Contact
             )
         end
       end
-      result
+      puts result.inspect
       # puts "Closing the db connection..."
     end
  
@@ -71,16 +71,36 @@ class Contact
       end
     end
     
-    def show(id)
-      contact = @@contacts.find {|contact| contact.id == id }
-      if contact == nil 
-        puts "Contact not found.".red
-      else
-        puts contact.first_name.yellow
-        puts contact.last_name.yellow
-        puts contact.email.yellow
+    def find_by_email(email)
+      result = nil 
+      connection.exec_params("SELECT * FROM contacts WHERE email = $1;", [email]) do |contacts|
+        contacts.each do |contact|
+          result = Contact.new(contact['firstname'], contact['lastname'], contact['email'], contact['id'])
+        end
       end
+      puts result.inspect
     end
+
+    def find_all_by_firstname(firstname)
+      result_array = [] 
+      connection.exec_params("SELECT * FROM contacts WHERE firstname = $1;", [firstname]) do |contacts|
+        contacts.each do |contact|
+          result_array << Contact.new(contact['firstname'], contact['lastname'], contact['email'], contact['id'])
+        end
+      end
+      puts result_array.inspect
+    end
+
+    def find_all_by_lastname(lastname)
+      result_array = [] 
+      connection.exec_params("SELECT * FROM contacts WHERE lastname = $1;", [lastname]) do |contacts|
+        contacts.each do |contact|
+          result_array << Contact.new(contact['firstname'], contact['lastname'], contact['email'], contact['id'])
+        end
+      end
+      puts result_array.inspect
+    end
+
 
     def duplicate_entries(entry)
       @@contacts.each do |contacts|

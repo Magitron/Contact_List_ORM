@@ -1,44 +1,74 @@
+require 'pg'
 require 'pry'
+
+
+puts "establishing connection..."
 
 class Contact
  
-  attr_accessor :first_name, :last_name, :email, :id, :phone_numbers
- 
-  @@contacts = []
+  attr_accessor :first_name, :last_name, :email
+  attr_reader :id
 
-  def initialize(first_name, last_name, email, phone_numbers)
-    @first_name = first_name
-    @last_name = last_name
+  def initialize(firstname, lastname, email, id = nil)
+    @firstname = firstname
+    @lastname = lastname
     @email = email
-    @phone_numbers = phone_numbers
-    @id = @@contacts.size + 1
+    # @phone_numbers = phone_numbers
+    @id = id
   end
 
- 
-  def display
-    "#{@first_name}, #{@ast_name[0]}. (#{@email})"
+
+  def self.connection
+    return @conn if @conn
+    @conn = PG.connect(
+      dbname: 'd1qtsk1ten3dsu',
+      port: 5432,
+      user: 'hlwuyqroaunjey',
+      host: 'ec2-107-22-253-198.compute-1.amazonaws.com',
+      password: '9XQ6oyS1ZIQiwNjbrcqRb4lDmz'
+  )
   end
- 
-  ## Class Methods
-  class << self
-    def create(first_name, last_name, email, phone_numbers = [])
-      @@contacts << Contact.new(first_name, last_name, email, phone_numbers)
-      # TODO: Will initialize a contact as well as add it to the list of contacts
+
+    def save
+      if @id == nil
+        result = self.class.connection.exec_params("INSERT INTO contacts (firstname, lastname, email) VALUES ('#{@firstname}', '#{@lastname}', '#{@email}') returning id")
+        @id = result[0]['id']
+      else
+        self.class.connection.exec_params('UPDATE pets SET firstname = $1 lastname = $2 email = $3  WHERE id = $4;', [@firstname, @lastname, @email, @id])
+      end
     end
- 
-    def find(search_term)
-      @@contacts.each do |contact|
-        if contact.first_name.downcase.include? search_term.downcase
-          puts contact.first_name.yellow
-          puts contact.last_name.yellow
-          puts contact.email.yellow
+
+    def destroy
+      self.class.connection.exec_params("DELETE FROM contacts WHERE id = $1;", [id])
+    end
+
+
+  class << self
+    def find(id)
+      result = nil
+      connection.exec_params("SELECT * FROM contacts WHERE id = $1;", [id]) do |results|
+        results.each do |row|
+          result = Contact.new(
+            row['firstname'],
+            row['lastname'],
+            row['email'],
+            row['id']
+            )
         end
       end
-
+      result
+      # puts "Closing the db connection..."
     end
  
     def all
-      @@contacts
+    puts "getting contacts ..."
+      connection.exec( "SELECT * FROM contacts" ) do |results|
+        # results is a collection (array) of records (hashes)... Nice!
+        results.each do |contact|
+          puts contact.inspect
+        end
+        puts "Closing the db connection..."
+      end
     end
     
     def show(id)

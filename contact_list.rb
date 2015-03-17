@@ -1,6 +1,5 @@
 require 'colorize'
 require_relative 'contact'
-require_relative 'contact_database'
 
 
 class Application
@@ -15,30 +14,16 @@ class Application
   when 'new'
     puts "Please enter an email".magenta
     email = STDIN.gets.chomp.downcase
-    ContactDatabase.read_contacts
-    Contact.duplicate_entries(email)
 
     puts "Please enter the first name".magenta
-    first_name = STDIN.gets.chomp.capitalize
+    firstname = STDIN.gets.chomp.capitalize
 
     puts "Please enter the last name".magenta
-    last_name = STDIN.gets.chomp.capitalize
+    lastname = STDIN.gets.chomp.capitalize
 
-    phone_numbers = []
-    puts "Would you like to enter a phone number? (y/n)".magenta
-    choice = STDIN.gets.chomp
-    while choice == 'y'
-      new_phone_number = {}
-      puts "Mobile or Home?"
-      new_phone_number[:label] = STDIN.gets.chomp.capitalize
-      puts "Enter number"
-      new_phone_number[:number] = STDIN.gets.chomp
-      phone_numbers << new_phone_number
-      puts "Would you like to enter another phone number? (y/n)"
-      choice = STDIN.gets.chomp
-    end
-    p Contact.create(first_name, last_name, email, phone_numbers)
-    ContactDatabase.write_contacts
+    contact = Contact.new(firstname, lastname, email)
+    contact.save
+    puts contact.inspect
   when 'list'
     ContactDatabase.read_contacts
     Contact.all.each do |contact|
@@ -49,9 +34,15 @@ class Application
     id = Integer(ARGV[1]) #if its not a valid intiger it throws an argument
     Contact.show id
   when 'find'
-    ContactDatabase.read_contacts
-    search_term = String(ARGV[1])
-    Contact.find search_term
+    id = String(ARGV[1])
+    Contact.find(id)
+  when 'all'
+    contacts = Contact.all
+    # puts contacts.inspect
+  when 'delete'
+    id = String(ARGV[1])
+    record = Contact.find(id)
+    record.destroy
   end
 end
 

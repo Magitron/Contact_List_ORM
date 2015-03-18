@@ -29,10 +29,6 @@ class Application
     Contact.all.each do |contact|
     puts "##{contact.id}: #{contact.first_name}, #{contact.last_name[0]} (#{contact.email})".green
     end
-  when 'show'
-    ContactDatabase.read_contacts
-    id = Integer(ARGV[1]) #if its not a valid intiger it throws an argument
-    Contact.show id
   when 'find'
     id = String(ARGV[1])
     Contact.find(id)

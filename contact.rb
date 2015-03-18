@@ -57,7 +57,7 @@ class Contact
         end
       end
       puts result.inspect
-      # puts "Closing the db connection..."
+      puts "Closing the db connection..."
     end
  
     def all
@@ -100,16 +100,5 @@ class Contact
       end
       puts result_array.inspect
     end
-
-
-    def duplicate_entries(entry)
-      @@contacts.each do |contacts|
-        if contacts.email == entry
-          raise NameError, "That contact already exists and cannot be created."
-        end
-      end
-    end
-    
   end
- 
 end

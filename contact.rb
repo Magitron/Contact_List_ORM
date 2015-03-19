@@ -13,7 +13,6 @@ class Contact
     @firstname = firstname
     @lastname = lastname
     @email = email
-    # @phone_numbers = phone_numbers
     @id = id
   end
 
@@ -26,15 +25,15 @@ class Contact
       user: 'hlwuyqroaunjey',
       host: 'ec2-107-22-253-198.compute-1.amazonaws.com',
       password: '9XQ6oyS1ZIQiwNjbrcqRb4lDmz'
-  )
+      )
   end
 
     def save
-      if @id == nil
+      if @id
+        self.class.connection.exec_params('UPDATE pets SET firstname = $1 lastname = $2 email = $3  WHERE id = $4;', [@firstname, @lastname, @email, @id])
+      else
         result = self.class.connection.exec_params("INSERT INTO contacts (firstname, lastname, email) VALUES ('#{@firstname}', '#{@lastname}', '#{@email}') returning id")
         @id = result[0]['id']
-      else
-        self.class.connection.exec_params('UPDATE pets SET firstname = $1 lastname = $2 email = $3  WHERE id = $4;', [@firstname, @lastname, @email, @id])
       end
     end
 
@@ -63,17 +62,15 @@ class Contact
     def all
     puts "getting contacts ..."
       connection.exec( "SELECT * FROM contacts" ) do |results|
-        # results is a collection (array) of records (hashes)... Nice!
         results.each do |contact|
           puts contact.inspect
         end
-        puts "Closing the db connection..."
       end
     end
     
     def find_by_email(email)
       result = nil 
-      connection.exec_params("SELECT * FROM contacts WHERE email = $1;", [email]) do |contacts|
+      connection.exec_params("SELECT * FROM contacts WHERE email = $1 LIMIT 1;", [email]) do |contacts|
         contacts.each do |contact|
           result = Contact.new(contact['firstname'], contact['lastname'], contact['email'], contact['id'])
         end
